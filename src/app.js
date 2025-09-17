@@ -1,18 +1,34 @@
 const express = require('express');
 
+const { userAuth, adminAuth } = require('./middlewares/auth');
+
 const app = express();
+const PORT = 7777;
 
-app.use('/user',[(req, res, next)=>{
-    console.log("response 1");
-    //res.send("response 1");
+app.get('/user/data', userAuth, (req, res, next) => {
+    throw new Error('Simulated error in user data route');
+    // res.send('Response from user data route');
     next();
-},
-(req, res, next)=>{
-    console.log("response 2");
-    res.send("response 2");
-    next();
-}]);
+});
 
-app.listen(7777, ()=>{
-    console.log('Server is running on port 7777');
-})
+app.get('/admin/data', adminAuth, (req, res, next) => {
+    try {
+        throw new Error('Simulated error in admin data route');
+        //res.send('Response from admin data route');
+        next();
+    } catch (error) {
+        res.status(500).send('Internal Server Error for admin route');
+    }
+});
+
+app.use('/user', (err, req, res, next) => {
+    if (err) {
+        res.status(500).send('Internal Server Error');
+    } else {
+        next();
+    }
+});
+
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
