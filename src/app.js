@@ -16,6 +16,37 @@ app.post('/signup', async (req, res) => {
     }
 });
 
+app.get('/feed', async (req, res) => {
+    try {
+        const users = await User.find();
+        res.status(200).json(users);
+    } catch (error) {
+        res.status(500).json({ message: "User retrieval failed", error });
+    }
+});
+
+app.delete('/user', async (req, res)=>{
+    try{
+        const userToBedeleted = await User.findById(req.body.id);
+        if(!userToBedeleted){
+            return res.status(404).json({message: "User not found"});
+        }
+        await User.findByIdAndDelete(req.body.id);
+        res.status(200).json(`${userToBedeleted.firstName + ' ' + userToBedeleted.lastName} deleted successfully`);
+    } catch (error) {
+        res.status(500).json({ message: "User deletion failed", error });
+    }
+});
+
+app.patch('/user', async (req, res)=>{
+    try{
+        const updatedUsers = await User.findByIdAndUpdate(req.body.id, req.body, { returnOriginal: false });
+        res.status(200).json({ message: "User updated successfully", user: updatedUsers });
+    } catch (error) {
+        res.status(500).json({ message: "User update failed", error });
+    }
+})
+
 
 
 dbConnect()
