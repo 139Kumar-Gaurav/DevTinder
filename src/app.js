@@ -1,34 +1,29 @@
-const express = require('express');
-
-const { userAuth, adminAuth } = require('./middlewares/auth');
-
+const express = require("express");
+const dbConnect = require("./config/dbConnect");
+const User = require("./models/User");
+require("dotenv").config();
 const app = express();
-const PORT = 7777;
+const PORT = process.env.PORT;
 
-app.get('/user/data', userAuth, (req, res, next) => {
-    throw new Error('Simulated error in user data route');
-    // res.send('Response from user data route');
-    next();
-});
+app.use(express.json());
 
-app.get('/admin/data', adminAuth, (req, res, next) => {
+app.post('/signup', async (req, res) => {
     try {
-        throw new Error('Simulated error in admin data route');
-        //res.send('Response from admin data route');
-        next();
+        await new User(req.body).save();
+        res.status(200).json({ message: "User signed up successfully" });
     } catch (error) {
-        res.status(500).send('Internal Server Error for admin route');
+        res.status(500).json({ message: "User signup failed", error });
     }
 });
 
-app.use('/user', (err, req, res, next) => {
-    if (err) {
-        res.status(500).send('Internal Server Error');
-    } else {
-        next();
-    }
-});
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+
+dbConnect()
+  .then(
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    })
+  )
+  .catch((err) => {
+    console.log("Database connection failed", err);
+  });
