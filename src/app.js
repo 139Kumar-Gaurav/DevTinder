@@ -1,36 +1,51 @@
 const express = require("express");
 const dbConnect = require("./config/dbConnect");
 const User = require("./models/User");
+const { validateSignupData } = require("./utils/validationHelper");
+const apis = require("./utils/apis");
+const bcrypt = require("bcrypt");
 require("dotenv").config();
 const app = express();
 const PORT = process.env.PORT;
 
 app.use(express.json());
 
-const validationMiddleware = (req, res, next) => {
+app.post(apis.SIGN_UP, async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
-  if (firstName.length > 5 || lastName.length > 5 || !email || !password) {
-    return res
-      .status(400)
-      .json({
-        message:
-          "Validation failed. Please provide all required fields with valid data.",
-      });
-  }
-  next();
-};
-
-app.post("/signup", validationMiddleware, async (req, res) => {
-  const data = req.body;
+  const { isValid, error } = validateSignupData({ email, password });
   try {
-    await new User(data).save();
-    res.status(200).json({ message: "User signed up successfully" });
+    if (isValid) {
+      const encryptedPassword = await bcrypt.hash(password, 10);
+      await new User({
+        firstName,
+        lastName,
+        email,
+        password: encryptedPassword,
+      }).save();
+      res.status(200).json({ message: "User signed up successfully" });
+    } else {
+      throw new Error(error);
+    }
   } catch (error) {
-    res.status(500).json({ message: "User signup failed", error });
+    res.status(500).json({ message: "User signup failed", error: error.toString() });
   }
 });
 
-app.get("/feed", async (req, res) => {
+app.post(apis.LOGIN, async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.status(401).json({ message: "Invalid email or password" });
+    } else {
+      res.status(200).json({ message: "Login successful", user });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Login failed", error });
+  }
+});
+
+app.get(apis.FEED, async (req, res) => {
   try {
     const users = await User.find();
     res.status(200).json(users);
@@ -39,7 +54,7 @@ app.get("/feed", async (req, res) => {
   }
 });
 
-app.delete("/user", async (req, res) => {
+app.delete(apis.USER, async (req, res) => {
   try {
     const userToBedeleted = await User.findById(req.body.id);
     if (!userToBedeleted) {
@@ -58,7 +73,7 @@ app.delete("/user", async (req, res) => {
   }
 });
 
-app.patch("/user/:id", async (req, res) => {
+app.patch(apis.UPDATE_USER, async (req, res) => {
   const userId = req.params.id;
   const data = req.body;
   const allowedUpdates = [
@@ -66,6 +81,7 @@ app.patch("/user/:id", async (req, res) => {
     "lastName",
     "password",
     "age",
+    "gender",
     "imageUrl",
     "about",
     "skills",

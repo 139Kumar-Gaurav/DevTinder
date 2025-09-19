@@ -16,4 +16,17 @@ const adminAuth = (req, res, next) => {
     }
 };
 
-module.exports = { userAuth, adminAuth };
+const validationMiddleware = (req, res, next) => {
+  const { firstName, lastName, email, password } = req.body;
+  if (firstName.length > 20 || lastName.length > 20 || !email || !password) {
+    return res
+      .status(400)
+      .json({
+        message:
+          "Validation failed. Please provide all required fields with valid data.",
+      });
+  }
+  next();
+};
+
+module.exports = { userAuth, adminAuth, validationMiddleware };
