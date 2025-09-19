@@ -9,6 +9,7 @@ const cookieParser = require("cookie-parser");
 require("dotenv").config();
 const app = express();
 const PORT = process.env.PORT;
+const { userAuth } = require("./middlewares/auth");
 
 app.use(express.json());
 app.use(cookieParser());
@@ -40,95 +41,47 @@ app.post(apis.LOGIN, async (req, res) => {
   const { email, password } = req.body;
   try {
     const user = await User.findOne({ email });
-    const isValidPassword = await bcrypt.compare(password, user.password);
+    const isValidPassword = await user?.validatePassword(password);
     if (!user || !isValidPassword) {
       return res.status(401).json({ message: "Invalid email or password" });
     } else {
-      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-      res.cookie("token", token,);
+      const token = await user.getJWT();
+      res.cookie("token", token);
       res.status(200).json({ message: "Login successful", user });
     }
   } catch (error) {
-    res.status(500).json({ message: "Login failed", error });
+    res.status(500).json({ message: "Login failed", error: error.toString() });
   }
 });
 
-app.get(apis.PROFILE, async (req, res) => {
-    try{
-        const cookie = req.cookies;
-        const decoded = jwt.verify(cookie.token, process.env.JWT_SECRET);
-        const user = await User.findById(decoded.id);
-        if(!user){
-            throw new Error("User not found");
-        }
-        res.send(`Welcome to your profile! ${user.firstName} ${user.lastName}` + user);
-    } catch (error) {
-        res.status(500).json({ message: "Profile retrieval failed", error });
-    }
-});
-
-app.get(apis.FEED, async (req, res) => {
+app.post(apis.LOGOUT, userAuth, (req, res) => {
   try {
-    const users = await User.find();
-    res.status(200).json(users);
+    res.clearCookie("token");
+    res.status(200).json({ message: "Logout successful" });
   } catch (error) {
-    res.status(500).json({ message: "User retrieval failed", error });
+    res.status(500).json({ message: "Logout failed", error });
   }
 });
 
-app.delete(apis.USER, async (req, res) => {
+app.get(apis.PROFILE, userAuth, async (req, res) => {
   try {
-    const userToBedeleted = await User.findById(req.body.id);
-    if (!userToBedeleted) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    await User.findByIdAndDelete(req.body.id);
-    res
-      .status(200)
-      .json(
-        `${
-          userToBedeleted.firstName + " " + userToBedeleted.lastName
-        } deleted successfully`
-      );
-  } catch (error) {
-    res.status(500).json({ message: "User deletion failed", error });
-  }
-});
-
-app.patch(apis.UPDATE_USER, async (req, res) => {
-  const userId = req.params.id;
-  const data = req.body;
-  const allowedUpdates = [
-    "firstName",
-    "lastName",
-    "password",
-    "age",
-    "gender",
-    "imageUrl",
-    "about",
-    "skills",
-  ];
-  try {
-    const allowed = Object.keys(data).every((update) =>
-      allowedUpdates.includes(update)
-    );
-    if (!allowed) {
-      throw new Error("Invalid updates detected: ");
-    }
-    const updatedUsers = await User.findByIdAndUpdate(userId, data, {
-      returnOriginal: false,
-      runValidators: true,
-    });
-    if (!updatedUsers) {
+    const user = req.user;
+    if (!user) {
       throw new Error("User not found");
     }
-    res
-      .status(200)
-      .json({ message: "User updated successfully", user: updatedUsers });
+    res.send(
+      `Welcome to your profile! ${user.firstName} ${user.lastName}` + user
+    );
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "User update failed", error: error.toString() });
+    res.status(500).json({ message: "Profile retrieval failed", error });
+  }
+});
+
+app.post(apis.SEND_CONNECTION_REQUEST, userAuth, (req, res) => {
+  try {
+    res.status(200).json({ message: `Connection request sent successfully by ${req.user.firstName} ${req.user.lastName}` });
+  } catch (error) {
+    res.status(500).json({ message: "Connection request failed", error });
   }
 });
 
