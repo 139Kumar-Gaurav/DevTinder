@@ -14,4 +14,9 @@ const validateSignupData = (data) => {
   }
 };
 
-module.exports = { validateSignupData };
+const validateUpdateData = (data) => {
+  const allowedUpdates = ['firstName', 'lastName', 'age', 'about', 'skills', 'gender', 'imageUrl'];
+  return Object.keys(data).every((key) => allowedUpdates.includes(key));
+};
+
+module.exports = { validateSignupData, validateUpdateData };

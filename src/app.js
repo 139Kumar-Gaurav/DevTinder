@@ -3,7 +3,7 @@ const dbConnect = require("./config/dbConnect");
 const cookieParser = require("cookie-parser");
 const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
-const requestRouter = require("./routes/connection");
+const requestRouter = require("./routes/request");
 require("dotenv").config();
 const app = express();
 const PORT = process.env.PORT;

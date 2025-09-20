@@ -1,4 +1,4 @@
-const express = require('express');
+const express = require("express");
 const apis = require("../utils/apis");
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
@@ -38,8 +38,10 @@ authRouter.post(apis.LOGIN, async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
     } else {
       const token = await user.getJWT();
-      res.cookie("token", token);
-      res.status(200).json({ message: "Login successful", user });
+      res
+        .cookie("token", token)
+        .status(200)
+        .json({ message: "Login successful", user });
     }
   } catch (error) {
     res.status(500).json({ message: "Login failed", error: error.toString() });

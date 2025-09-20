@@ -5,7 +5,6 @@ const User = require("../models/User");
 const userAuth = async (req, res, next) => {
   try {
     const cookie = req.cookies;
-    console.log("Cookie:", cookie);
     const decoded = await jwt.verify(cookie.token, process.env.JWT_SECRET);
     if (decoded) {
       const currentUser = await User.findById(decoded.id);
