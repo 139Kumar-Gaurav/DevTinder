@@ -38,14 +38,58 @@ requestRouter.post(apis.SEND_CONNECTION_REQUEST, userAuth, async (req, res) => {
       status,
     });
     await connectionRequest.save();
-    res
-      .status(200)
-      .json({
-        message: `${toUser.firstName} is marked ${status} by ${req.user.firstName}`,
-      });
+    res.status(200).json({
+      message: `${toUser.firstName} is marked ${status} by ${req.user.firstName}`,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Connection request failed", error: error.message.toString() });
+    res
+      .status(500)
+      .json({
+        message: "Connection request failed",
+        error: error.message.toString(),
+      });
   }
 });
+
+requestRouter.post(
+  apis.REVIEW_CONNECTION_REQUEST,
+  userAuth,
+  async (req, res) => {
+    try {
+      const { status, requestId } = req.params;
+      const loggedInUser = req.user;
+
+      const allowedStatuses = ["accepted", "rejected"];
+      if (!allowedStatuses.includes(status)) {
+        return res.status(400).json({ message: "Invalid review status" });
+      }
+
+      const connectionRequest = await ConnectionRequest.findOne({
+        _id: requestId,
+        toUserId: loggedInUser._id,
+        status: "interested",
+      });
+
+      if (!connectionRequest) {
+        return res
+          .status(404)
+          .json({ message: "Connection request not found" });
+      }
+
+      connectionRequest.status = status;
+      await connectionRequest.save();
+      res
+        .status(200)
+        .json({ message: `Connection is ${status}`, User: connectionRequest });
+    } catch (error) {
+      res
+        .status(500)
+        .json({
+          message: "Reviewing connection request failed",
+          error: error.message.toString(),
+        });
+    }
+  }
+);
 
 module.exports = requestRouter;

@@ -11,6 +11,7 @@ const apis = {
 
     // usersRouter
     SEND_CONNECTION_REQUEST: "/request/send/:status/:toUserId",
+    REVIEW_CONNECTION_REQUEST: "/request/review/:status/:requestId",
 };
 
 module.exports = apis;
