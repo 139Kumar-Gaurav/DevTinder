@@ -10,7 +10,7 @@ const apis = {
     PROFILE_PASSWORD_EDIT: "/profile/password/edit",
 
     // usersRouter
-    SEND_CONNECTION_REQUEST: "/connections/send",
+    SEND_CONNECTION_REQUEST: "/request/send/:status/:toUserId",
 };
 
 module.exports = apis;
