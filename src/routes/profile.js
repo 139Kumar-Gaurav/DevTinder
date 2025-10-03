@@ -13,7 +13,7 @@ profileRouter.get(apis.PROFILE_VIEW, userAuth, async (req, res) => {
       throw new Error("User not found");
     }
     res.send(
-      `Welcome to your profile! ${user.firstName} ${user.lastName}` + user
+      user
     );
   } catch (error) {
     res.status(500).json({ message: "Profile retrieval failed", error });
