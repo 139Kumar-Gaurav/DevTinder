@@ -3,7 +3,6 @@ const apis = require("../utils/apis");
 const { userAuth } = require("../middlewares/auth");
 const ConnectionRequest = require("../models/ConnectionRequest");
 const User = require("../models/User");
-const { parse } = require("dotenv");
 const userRouter = express.Router();
 
 const CONNECTION_DATA = "firstName lastName age gender imageUrl about skills";

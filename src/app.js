@@ -8,7 +8,7 @@ const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user");
 require("dotenv").config();
 const app = express();
-const PORT = process.env.PORT;
+const PORT = 7777;
 
 app.use(cors({
   origin: "http://localhost:5173",
