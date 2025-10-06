@@ -1,10 +1,9 @@
 const mongoose = require("mongoose");
+require("dotenv").config();
 
 const dbConnect = async () => {
   try {
-    await mongoose.connect(
-      "mongodb+srv://139kumargaurav:h50g5Q2F96EPz51q@namastenodejs.vdyrcme.mongodb.net/devtinder"
-    );
+    await mongoose.connect(process.env.PASSWORD);
   } catch (err) {
     console.log("error in connecting ", err);
   }

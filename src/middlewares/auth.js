@@ -4,7 +4,7 @@ const User = require("../models/User");
 const userAuth = async (req, res, next) => {
   try {
     const cookie = req.cookies;
-    const decoded = await jwt.verify(cookie.token, "LUFFY@strawhat21");
+    const decoded = await jwt.verify(cookie.token, process.env.JWT_SECRET);
     if (decoded) {
       const currentUser = await User.findById(decoded.id);
       if (!currentUser) {

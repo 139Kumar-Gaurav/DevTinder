@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const dbConnect = require("./config/dbConnect");
@@ -6,7 +7,6 @@ const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user");
-require("dotenv").config();
 const app = express();
 const PORT = 7777;
 
