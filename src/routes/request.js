@@ -4,7 +4,6 @@ const { userAuth } = require("../middlewares/auth");
 const User = require("../models/User");
 const ConnectionRequest = require("../models/ConnectionRequest");
 const requestRouter = express.Router();
-const { run } = require("../utils/sendEmail");
 
 requestRouter.post(apis.SEND_CONNECTION_REQUEST, userAuth, async (req, res) => {
   try {
@@ -39,7 +38,6 @@ requestRouter.post(apis.SEND_CONNECTION_REQUEST, userAuth, async (req, res) => {
       status,
     });
     await connectionRequest.save();
-    await run(toUser.email, req.userfirstName);
     res.status(200).json({
       message: `${toUser.firstName} is marked ${status} by ${req.user.firstName}`,
     });
